@@ -1,3 +1,5 @@
+import AdminJS from 'adminjs';
+
 import {
   userResource,
   productResource,
@@ -9,5 +11,19 @@ import {
 
 const adminJs = new AdminJS({
   rootPath: '/admin',
-  resources: [...],
+
+  resources: [
+    userResource,
+    productResource,
+    categoryResource,
+    orderResource,
+    orderItemResource,
+    settingResource
+  ],
+  // This is required for RBAC
+  currentAdmin: async (request) => {
+    return request.session?.adminUser || null;
+  }
 });
+
+export default adminJs;
