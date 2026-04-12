@@ -26,7 +26,9 @@ export const userResource = {
       delete: { isAccessible: isAdmin },
     },
     properties: {
-      password: { isVisible: false },
+      password: {
+        isVisible: { list: false, filter: false, show: false, edit: true },
+      },
     },
   },
 };
