@@ -15,9 +15,6 @@ import apiRouter from "./routes/api.js";
 
 const app = express();
 
-// Trust proxy headers from Render / NGINX (required for secure cookies behind HTTPS)
-app.set('trust proxy', 1);
-
 // Setup Session Store
 const SequelizeStore = ConnectSessionSequelize(session.Store);
 const sessionStore = new SequelizeStore({ 
@@ -70,7 +67,7 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "another_very_long_32_char_secret_for_session",
     cookie: {
-      secure: process.env.NODE_ENV === "production", // true on Render (HTTPS), false locally
+      secure: false, // Must be false for localhost HTTP
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
@@ -103,9 +100,8 @@ const start = async () => {
     console.log("Database & Sessions Synced");
 
     // 3. Start Listening
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Admin Panel running on port ${PORT}`);
+    app.listen(3000, () => {
+      console.log(`Admin Panel: http://localhost:3000/admin`);
     });
   } catch (error) {
     console.error("Critical Startup Error:", error);

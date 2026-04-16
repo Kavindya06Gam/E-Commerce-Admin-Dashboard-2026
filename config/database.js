@@ -15,13 +15,8 @@ const sequelize = new Sequelize(
     // Helpful for debugging in development
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     dialectOptions: {
-      // Enable SSL for production (required by Render PostgreSQL)
-      ...(process.env.NODE_ENV === "production" && {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false, // Render uses self-signed certs
-        },
-      }),
+      // SCRAM-SHA-256 is the default for Postgres 14+,
+      // ensuring the string conversion above handles the handshake.
     },
     pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
   },
