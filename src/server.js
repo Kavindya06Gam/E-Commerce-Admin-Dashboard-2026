@@ -15,6 +15,39 @@ import apiRouter from "./routes/api.js";
 
 const app = express();
 
+const ensureDefaultAdminUser = async () => {
+  const defaultAdminEmail = (process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com")
+    .toLowerCase()
+    .trim();
+  const defaultAdminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Admin@1234";
+  const defaultAdminName = process.env.DEFAULT_ADMIN_NAME || "Super Admin";
+
+  if (!defaultAdminPassword) {
+    console.warn("Skipping default admin bootstrap: password is empty");
+    return;
+  }
+
+  const existingAdmin = await User.findOne({ where: { email: defaultAdminEmail } });
+
+  if (existingAdmin) {
+    if (!existingAdmin.isActive) {
+      await existingAdmin.update({ isActive: true });
+      console.log(`Reactivated default admin account: ${defaultAdminEmail}`);
+    }
+    return;
+  }
+
+  await User.create({
+    name: defaultAdminName,
+    email: defaultAdminEmail,
+    password: defaultAdminPassword,
+    role: "admin",
+    isActive: true,
+  });
+
+  console.log(`Created default admin account: ${defaultAdminEmail}`);
+};
+
 // Setup Session Store
 const SequelizeStore = ConnectSessionSequelize(session.Store);
 const sessionStore = new SequelizeStore({ 
@@ -99,6 +132,7 @@ const start = async () => {
     // 2. Sync Models & Session Store
     await sequelize.sync();
     await sessionStore.sync(); 
+    await ensureDefaultAdminUser();
     console.log("Database & Sessions Synced");
 
     // 3. Start Listening
