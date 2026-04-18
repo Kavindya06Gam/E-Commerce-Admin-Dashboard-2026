@@ -68,8 +68,9 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "another_very_long_32_char_secret_for_session",
     cookie: {
-      secure: false, // Must be false for localhost HTTP
+      secure: process.env.NODE_ENV === "production", // Must be true for GCP HTTPS
       httpOnly: true,
+      sameSite: "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   }
