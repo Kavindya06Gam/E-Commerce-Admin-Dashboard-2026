@@ -100,8 +100,9 @@ const start = async () => {
     console.log("Database & Sessions Synced");
 
     // 3. Start Listening
-    app.listen(3000, () => {
-      console.log(`Admin Panel: http://localhost:3000/admin`);
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Admin Panel running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Critical Startup Error:", error);
