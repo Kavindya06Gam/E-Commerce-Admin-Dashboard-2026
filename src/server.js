@@ -21,6 +21,8 @@ const ensureDefaultAdminUser = async () => {
     .trim();
   const defaultAdminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "Admin@1234";
   const defaultAdminName = process.env.DEFAULT_ADMIN_NAME || "Super Admin";
+  const shouldResetDefaultAdminPassword =
+    String(process.env.RESET_DEFAULT_ADMIN_PASSWORD || "false").toLowerCase() === "true";
 
   if (!defaultAdminPassword) {
     console.warn("Skipping default admin bootstrap: password is empty");
@@ -30,10 +32,16 @@ const ensureDefaultAdminUser = async () => {
   const existingAdmin = await User.findOne({ where: { email: defaultAdminEmail } });
 
   if (existingAdmin) {
-    if (!existingAdmin.isActive) {
-      await existingAdmin.update({ isActive: true });
-      console.log(`Reactivated default admin account: ${defaultAdminEmail}`);
+    const updates = {};
+    if (!existingAdmin.isActive) updates.isActive = true;
+    if (existingAdmin.role !== "admin") updates.role = "admin";
+    if (shouldResetDefaultAdminPassword) updates.password = defaultAdminPassword;
+
+    if (Object.keys(updates).length > 0) {
+      await existingAdmin.update(updates);
+      console.log(`Updated default admin account: ${defaultAdminEmail}`);
     }
+
     return;
   }
 
