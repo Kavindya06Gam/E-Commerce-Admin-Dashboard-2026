@@ -15,6 +15,10 @@ import apiRouter from "./routes/api.js";
 
 const app = express();
 
+// Cloud Run / load balancers terminate TLS; Express must trust X-Forwarded-* so
+// secure session cookies work (otherwise /admin login succeeds then bounces back).
+app.set("trust proxy", true);
+
 const ensureDefaultAdminUser = async () => {
   const defaultAdminEmail = (process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com")
     .toLowerCase()

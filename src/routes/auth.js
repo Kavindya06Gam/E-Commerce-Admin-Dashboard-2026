@@ -6,46 +6,50 @@ const router = express.Router();
 
 // Login route - handles user authentication
 router.post('/login', async (req, res) => {
+  try {
+    // Extract email and password from request body
+    const { email, password } = req.body;
 
-  // Extract email and password from request body
-  const { email, password } = req.body;
+    // Validate input - both email and password are required
+    if (!email || !password)
+      return res.status(400).json({ message: 'Email and password required' });
 
-  // Validate input - both email and password are required
-  if (!email || !password)
-    return res.status(400).json({ message: 'Email and password required' });
+    // Find user in database using email (converted to lowercase and trimmed for consistency)
+    const user = await User.findOne({
+      where: { email: email.toLowerCase().trim() }
+    });
 
-  // Find user in database using email (converted to lowercase and trimmed for consistency)
-  const user = await User.findOne({
-    where: { email: email.toLowerCase().trim() }
-  });
+    // Check if user exists and is active
+    if (!user || !user.isActive)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
-  // Check if user exists and is active
-  if (!user || !user.isActive)
-    return res.status(401).json({ message: 'Invalid credentials' });
+    // Compare entered password with hashed password in database
+    const valid = await user.validatePassword(password);
 
-  // Compare entered password with hashed password in database
-  const valid = await user.validatePassword(password);
+    // If password does not match, reject login
+    if (!valid)
+      return res.status(401).json({ message: 'Invalid credentials' });
 
-  // If password does not match, reject login
-  if (!valid)
-    return res.status(401).json({ message: 'Invalid credentials' });
+    // Generate JWT token for authenticated user
+    const token = generateToken(user);
 
-  // Generate JWT token for authenticated user
-  const token = generateToken(user);
+    // Send successful response with token and safe user data
+    return res.json({
+      success: true,
+      token,
 
-  // Send successful response with token and safe user data
-  return res.json({
-    success: true,
-    token,
-
-    // Only send non-sensitive user information
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role
-    }
-  });
+      // Only send non-sensitive user information
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ message: err.message || 'Login failed' });
+  }
 });
 
 export default router;
