@@ -41,8 +41,9 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
         const valid = await bcrypt.compare(password, user.password);
         console.log("Password check:", valid ? "VALID" : "INVALID");
 
-        if (!valid || user.role !== "admin") {
-          console.log("Access Denied: Incorrect credentials or not an admin");
+        // Allow any active user with a valid password to log in
+        if (!valid) {
+          console.log("Access Denied: Incorrect credentials");
           return null;
         }
 

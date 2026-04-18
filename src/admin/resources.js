@@ -17,6 +17,7 @@ import { isAdmin } from "./rbac.js";
 export const userResource = {
   resource: User,
   options: {
+    isAccessible: isAdmin, // Completely hides this resource from regular users
     navigation: { icon: "User", name: "User Management" },
     actions: {
       list: { isAccessible: isAdmin },
@@ -108,6 +109,7 @@ export const orderItemResource = {
 export const settingResource = {
   resource: Setting,
   options: {
+    isAccessible: isAdmin, // Completely hides this resource from regular users
     navigation: { icon: "Settings", name: "Configuration" },
     actions: {
       list: { isAccessible: isAdmin },
